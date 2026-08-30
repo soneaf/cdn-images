@@ -28,8 +28,13 @@ if [ -z "$ALL" ]; then
   exit 0
 fi
 
-LIST=${CHANGED:-}
-[ -z "$LIST" ] && LIST=$ALL && HEADER="All image links:" || HEADER="Links for what you just added:"
+if [ -n "${CHANGED:-}" ]; then
+  LIST=$CHANGED
+  HEADER="Links for what you just added:"
+else
+  LIST=$ALL
+  HEADER="All image links:"
+fi
 
 printf '\n\033[1m%s\033[0m\n\n' "$HEADER"
 URLS=""

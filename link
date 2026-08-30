@@ -1,1 +1,2 @@
-.tools/link.sh
+#!/bin/bash
+exec "$(cd "$(dirname "$0")" && pwd)/.tools/link.sh" "$@"
