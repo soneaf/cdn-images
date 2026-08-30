@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Image Links</title>
+<style>
+  :root{--bg:#fafaf9;--card:#fff;--ink:#1c1917;--mute:#78716c;--line:#e7e5e4;--accent:#2563eb;--ok:#16a34a}
+  @media (prefers-color-scheme:dark){:root{--bg:#0c0a09;--card:#1c1917;--ink:#fafaf9;--mute:#a8a29e;--line:#292524;--accent:#60a5fa;--ok:#4ade80}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:32px 20px 80px}
+  header{max-width:1100px;margin:0 auto 24px}
+  h1{font-size:22px;margin:0 0 4px;letter-spacing:-.01em}
+  .sub{color:var(--mute);font-size:13px;margin:0}
+  #q{width:100%;max-width:1100px;margin:20px auto 0;display:block;padding:11px 14px;border:1px solid var(--line);
+     border-radius:10px;background:var(--card);color:var(--ink);font-size:15px;outline:none}
+  #q:focus{border-color:var(--accent)}
+  .grid{max-width:1100px;margin:22px auto 0;display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+  .thumb{height:150px;display:flex;align-items:center;justify-content:center;background:
+    repeating-conic-gradient(rgba(128,128,128,.14) 0% 25%,transparent 0% 50%) 50%/16px 16px;padding:8px}
+  .thumb img{max-width:100%;max-height:100%;object-fit:contain}
+  .meta{padding:10px 12px;border-top:1px solid var(--line)}
+  .fn{font-size:13px;font-weight:600;word-break:break-all}
+  .fold{font-size:11px;color:var(--mute);margin-top:2px}
+  .row{display:flex;gap:6px;padding:0 12px 12px}
+  button{flex:1;padding:7px 6px;font-size:12px;font-weight:600;border:1px solid var(--line);border-radius:8px;
+    background:transparent;color:var(--ink);cursor:pointer;font-family:inherit}
+  button:hover{border-color:var(--accent);color:var(--accent)}
+  button.done{border-color:var(--ok);color:var(--ok)}
+  .empty{max-width:1100px;margin:60px auto;text-align:center;color:var(--mute)}
+  code{background:var(--card);border:1px solid var(--line);padding:2px 6px;border-radius:5px;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Image Links</h1>
+  <p class="sub">Click <b>Copy URL</b> for the web address, or <b>Copy &lt;img&gt;</b> for a ready-made email tag.</p>
+</header>
+<input id="q" placeholder="Filter by name or folder…" autofocus>
+<div class="grid" id="grid"></div>
+<div class="empty" id="empty" hidden>No images yet — drop some in the folder and run <code>Sync.command</code>.</div>
+<script>
+const ITEMS = [
+{
+"path": "sample.png",
+"name": "sample.png",
+"folder": "",
+"url": "https://soneaf.github.io/cdn-images/sample.png",
+"size": "7 KB",
+"mtime": 1788123066
+}
+];
+const grid = document.getElementById('grid'), q = document.getElementById('q'), empty = document.getElementById('empty');
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function render(filter){
+  const f = filter.trim().toLowerCase();
+  const list = ITEMS.filter(i => !f || i.path.toLowerCase().includes(f));
+  empty.hidden = ITEMS.length > 0;
+  grid.innerHTML = list.map((i,n) => `
+    <div class="card">
+      <div class="thumb"><img loading="lazy" src="${esc(i.path)}" alt=""></div>
+      <div class="meta"><div class="fn">${esc(i.name)}</div>
+        <div class="fold">${esc(i.folder || '/')} · ${i.size}</div></div>
+      <div class="row">
+        <button data-copy="${esc(i.url)}">Copy URL</button>
+        <button data-copy="${esc('<img src=&quot;'+i.url+'&quot; alt=&quot;&quot; style=&quot;display:block;border:0;max-width:100%;&quot;>')}">Copy &lt;img&gt;</button>
+      </div>
+    </div>`).join('');
+}
+grid.addEventListener('click', async e => {
+  const b = e.target.closest('button[data-copy]'); if(!b) return;
+  try { await navigator.clipboard.writeText(b.dataset.copy); }
+  catch { const t=document.createElement('textarea'); t.value=b.dataset.copy; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
+  const old = b.textContent; b.textContent = 'Copied'; b.classList.add('done');
+  setTimeout(()=>{b.textContent=old;b.classList.remove('done')},1200);
+});
+q.addEventListener('input', () => render(q.value));
+render('');
+</script>
+</body>
+</html>
